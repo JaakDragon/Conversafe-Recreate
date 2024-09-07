@@ -316,6 +316,14 @@ section{
 
 /*Media Queries*/
 
+@media(min-width:728px){
+	.title{
+		font-size: 7vh;
+	}
+	.para{
+		font-size: 2vh;
+	}
+}
 @media(max-width:1028px){
 /*	Hamburger menu	*/
 	.hamburger{

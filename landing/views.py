@@ -11,6 +11,7 @@ from django.shortcuts import redirect
 # Models
 from .models import *
 from core.models import UserProfile
+from friends.models import FriendList
 # Forms
 from .forms import *
 
@@ -20,18 +21,18 @@ from django.contrib.sites.shortcuts import get_current_site
 from .tokens import account_activation_token
 
 # Email
-from django.utils.encoding import force_bytes,force_str
+from django.utils.encoding import force_bytes, force_str
 from django.template.loader import render_to_string
 from django.core.mail import EmailMessage
 from verify_email.email_handler import send_verification_email
 
 # Notifications
-from notifications.signals import notify
-
+# from notification.utils import notify
 
 
 # User Model
 User=get_user_model()
+
 
 
 
@@ -40,8 +41,6 @@ def landing(request):
 	if request.user.is_authenticated:
 		return redirect('/home/')
 	return render(request,"index.html")
-
-
 
 # Sign up Page
 def signup(request):
@@ -52,22 +51,25 @@ def signup(request):
 	# Checkform
 	form=UserForm(request.POST)
 	if request.POST:
-
 		if form.is_valid():
+			print("Form seems to be valid..")
 			email=form.get_user_info()['email'].lower()
 			password=form.get_user_info()['password']
 			name=form.get_user_info()['username']
 
 			# Checking if user exists
 			if AUser.objects.filter(email=email.lower()).exists():
+				print("User already exists!")
 				return render(request,"auth/signup.html",{"userAlreadyExists":True})
 
 			# Sending Verification Email
+			print("sending verification email....")
 			inactive_user = send_verification_email(request, form)
+			print("sent!")
 			context={}
-			context['text']="A Verification email has been sent to {}".format(email)
+			context['text']="A Verification email has been sent to {}. Make sure to check the spam folder!".format(email)
 			return render(request,"auth/email/showInfo/checkEmail.html",context)
-		
+		print(form.errors)
 		return render(request,"auth/signup.html",{"form":form,"userAlreadyExists":True})
 	
 	return render(request,"auth/signup.html",{"userAlreadyExists":False,"form":form})
@@ -75,7 +77,6 @@ def signup(request):
 
 
 # Login Page
-
 def Login(request):
 	# If user is authenticated, redirect to homepage
 	if request.user.is_authenticated:
@@ -87,9 +88,7 @@ def Login(request):
 
 		# Authenticating user
 		user=authenticate(request, email=email, password=password)
-
 		
-
 		# If everything is okay...
 
 		if user is not None:
@@ -98,6 +97,7 @@ def Login(request):
 				obj.firstLogin="Yes"
 				obj.save()
 				UserProfile.objects.create(user=user)
+				FriendList.objects.create(user=user)
 			# 	print("PROFILE CREATED SUCCESSFULLY")
 			login(request,user)
 			# notify.send(request.user,recipient=request.user,verb="Welcome to Conversafe!",description="Enjoy the application and let me know through feedback! Thank you:)")
@@ -108,7 +108,7 @@ def Login(request):
 		if User.objects.filter(email=email).exists():
 			if User.objects.filter(is_active=False):
 				context={}
-				context['text']="A Verification email has been sent to {}".format(email)
+				context['text']="A Verification email has been sent to {}. Make sure to check the spam folder!".format(email)
 				return render(request,"auth/email/showInfo/checkEmail.html",context)
 
 			return render(request,"auth/login.html",{"wrongInfo":True,"noUser":False})
@@ -154,7 +154,7 @@ def forgotPassword(request):
 
 			# Success message for the user
 			context={}
-			context['text']="A Verification email has been sent to {}".format(email)
+			context['text']="A Verification email has been sent to {}. Make sure to check the spam folder!".format(email)
 			return render(request,"auth/email/showInfo/checkEmail.html",context)
 
 		return render(request,"auth/pass/forgotPassword.html",{"noUser":True})
@@ -184,9 +184,5 @@ def resetPass(request,uidb64,token):
 
 	return render(request,"auth/pass/resetPass.html")
 
-
 def error404(request,exception):
 	return render(request,"auth/404.html")
-# Temp function for testing
-def temp(request):
-	return render(request,"auth/email/pass/resetSuccess.html")

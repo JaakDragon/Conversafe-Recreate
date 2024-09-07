@@ -8,10 +8,10 @@
 from django.apps import AppConfig
 
 class NotisConfig(AppConfig): 
-    name = "notifications"
+    name = "notification"
     label = 'notif' 
-    def ready(self): 
-        try: 
-            import notifications.signals 
-        except ImportError: 
-            pass
+    # def ready(self): 
+    #     try: 
+    #         import notifications.signals 
+    #     except ImportError: 
+    #         pass

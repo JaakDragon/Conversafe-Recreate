@@ -3,10 +3,19 @@
   "dev": "npx tailwindcss -i ./static/src/input.css -o ./static/src/styles.css --watch"
  },
  "devDependencies": {
-  "tailwindcss": "^3.4.1"
+  "autoprefixer": "^10.4.20",
+  "postcss": "^8.4.44",
+  "tailwindcss": "^3.4.10"
  },
  "dependencies": {
   "howler": "^2.2.4",
   "particles.js": "^2.0.0"
- }
+ },
+ "name": "conversafe",
+ "version": "1.0.0",
+ "description": "\"# Conversafe\"",
+ "main": "tailwind.config.js",
+ "keywords": [],
+ "author": "",
+ "license": "ISC"
 }
