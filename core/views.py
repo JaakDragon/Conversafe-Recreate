@@ -3,10 +3,9 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
 from django.shortcuts import redirect
 from landing import models
-from .models import UserProfile
+from .models import UserProfile,LearningSource
 from landing.models import AUser
 from friends.models import *
-# from notifications.signals import notify
 from notification.utils import *
 
 @login_required(login_url="login")
@@ -126,6 +125,7 @@ def events(request):
 	user = AUser.objects.get(pk=request.user.pk)
 	context['notifications_unread']=notifs(request.user)
 	context['notifications_count']=notifCount(request.user)
+	context['learning_sources']=LearningSource.objects.all()
 	return render(request,"main/func/events.html",context)
 
 

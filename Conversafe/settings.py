@@ -59,6 +59,7 @@ NEW_EMAIL_SENT_TEMPLATE  = 'auth/email/showInfo/checkEmail.html'
 
 # Application definition
 INSTALLED_APPS = [
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -68,6 +69,8 @@ INSTALLED_APPS = [
     # Downloaded apps
     'verify_email.apps.VerifyEmailConfig', 
     # Created apps
+    'AIChat',
+    'chat',
     'friends',
     'core',
     'landing',
@@ -103,10 +106,15 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'Conversafe.wsgi.application'
-
+ASGI_APPLICATION = 'Conversafe.asgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
+CHANNEL_LAYERS = {                                                
+    "default": {                                                  
+        "BACKEND": "channels.layers.InMemoryChannelLayer",        
+    },                                                            
+}   
 
 DATABASES = {
     'default': {
