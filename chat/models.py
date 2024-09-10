@@ -8,14 +8,8 @@ class chatRoom(models.Model):
 	name=models.CharField(max_length=255)
 	slug=models.SlugField(unique=True)
 	users=models.IntegerField(default=0)
-
-	# user1=models.CharField(max_length=320,null=True,blank=True)
-	# user2=models.CharField(max_length=320,null=True,blank=True)
-
 	user1=models.ForeignKey(AUser,related_name="chat_room",on_delete=models.CASCADE,null=True, blank=True)
-
 	user2=models.ForeignKey(AUser,related_name="chat_room_user2",on_delete=models.CASCADE,null=True, blank=True)
-
 	lastActive=models.DateTimeField(default=timezone.now)
 	
 	MALE="MALE"
@@ -34,7 +28,6 @@ class chatRoom(models.Model):
 
 
 class Message(models.Model):
-
 	room=models.ForeignKey(chatRoom,related_name="messages",on_delete=models.CASCADE)
 	user=models.ForeignKey(AUser,related_name="messages",on_delete=models.CASCADE)
 	displayName=models.CharField(max_length=30,default="ErrorOnDisplay")
@@ -60,4 +53,5 @@ class Message(models.Model):
 
 class ReportedMessage(models.Model):
 	message=models.ForeignKey(Message,related_name="reported_messages",on_delete=models.CASCADE)
+	messageText=models.TextField()
 	reporter=models.ForeignKey(AUser,related_name="reporter",on_delete=models.CASCADE,null=True,blank=True)

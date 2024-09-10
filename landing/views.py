@@ -1,3 +1,4 @@
+###  Libraries and stuff ############################################################
 # Render Templates
 from django.shortcuts import render
 
@@ -26,15 +27,12 @@ from django.template.loader import render_to_string
 from django.core.mail import EmailMessage
 from verify_email.email_handler import send_verification_email
 
-# Notifications
-# from notification.utils import notify
-
+# For notifications
+from notification.utils import notify
+#######################################################################################################
 
 # User Model
 User=get_user_model()
-
-
-
 
 # Landing Page
 def landing(request):
@@ -90,17 +88,17 @@ def Login(request):
 		user=authenticate(request, email=email, password=password)
 		
 		# If everything is okay...
-
 		if user is not None:
 			obj=AUser.objects.get(email=email)
 			if obj.firstLogin=="No":
 				obj.firstLogin="Yes"
 				obj.save()
-				UserProfile.objects.create(user=user)
+				UserProfile.objects.create(user=user,user_url=user.username)
 				FriendList.objects.create(user=user)
-			# 	print("PROFILE CREATED SUCCESSFULLY")
+                # Sending welcome notification
+				notify(obj,"Welcome to Conversafe!","Enjoy the application and let me know through feedback! Thank you:)")
+
 			login(request,user)
-			# notify.send(request.user,recipient=request.user,verb="Welcome to Conversafe!",description="Enjoy the application and let me know through feedback! Thank you:)")
 			return redirect("/home/")
 
 
@@ -184,5 +182,6 @@ def resetPass(request,uidb64,token):
 
 	return render(request,"auth/pass/resetPass.html")
 
+# Error 404 page (To be added on deployment)
 def error404(request,exception):
 	return render(request,"auth/404.html")

@@ -171,11 +171,11 @@ ul{
 
 #message{
     position: absolute;
-  left: 30%;
-  transform: translateX(-50%); 
-  margin: 0 auto; 
-  top: 50%;
-  transform: translateY(-50%);
+	left: 30%;
+	transform: translateX(-50%); 
+	margin: 0 auto; 
+	top: 50%;
+	transform: translateY(-50%);
     text-align: center;
     border: 2px solid white;
     border-radius: 1rem;
@@ -256,20 +256,6 @@ ul{
             </div>
         </div>
        
-<!-- 
-        <div>
-            <div style="position:absolute; top:0; right:0; padding-right: 20px; padding-top: 20px">
-                    <video width="100px" class="border-2 border-red-600" id="localVideo" autoplay muted playsinline></video>
-                </div>
-                <div id="remoteVideoDiv">
-                    <video style="width: 500px;" class="border-2 border-red-600"  id="remoteVideo" autoplay playsinline></video>
-                </div>
-           <button onclick="offer()" class="text-white text-xl border-red-600">Offer</button>
-            <button onclick="Answer()" class="text-white text-xl border-red-600">Answer</button>
-             
-        </div>
-
- -->
 
     </div>
 
@@ -388,11 +374,11 @@ document.getElementById("leaveButton").addEventListener('click', () => {
 
 // Report user
 function reportUser(element){
-    // console.log("Hey i am running...");
-    // userProfileName=element.parentNode.innerText;
-    // message=element.parentNode.parentNode.innerText;
-    // console.log(userProfileName);
-    // console.log(message);
+    console.log("Hey i am running...");
+    userProfileName=element.parentNode.innerText;
+    message=element.parentNode.parentNode.innerText;
+    console.log(userProfileName);
+    console.log(message);
     messagePID=element.dataset.messageid;
     showReportMessage();
     chatSocket.send(JSON.stringify({
@@ -457,7 +443,6 @@ function hideMessage(){
 }
 
 // ############################## webSocket events #############################################
-
 // As the connection opens up
 chatSocket.onopen = function() {
     // Checking if the newly joined user is the first user or not
@@ -490,16 +475,15 @@ chatSocket.onmessage = function(e) {
     }
 }
 
-
 chatSocket.onclose = function(e) {
 }
 
 
 // Before closing
 window.addEventListener("beforeunload", function(event) {
-    if (callInProgress) {
-        stop();
-    }
+    //if (callInProgress) {
+    //    stop();
+    //}
     chatSocket.send(JSON.stringify({
         'username': userName,
         'message': "",
@@ -582,7 +566,6 @@ function manageChat(data){
         audio.play();
 
 
-
         let html = "<div class='flex flex-row justify-center rounded-xl joinedLeft' style='height: 0.5rem; margin-top: 2.5rem; margin-bottom: 2.5rem;'><div class='bg-gray-600 text-white rounded-xl mx-8 space-y-3 w-full'><div class='p-2 bg-gray-600 rounded-xl'><p class=' text-sm text-center'> " + data.displayName + " Joined The Conversation</p></div></div></div>";
 
         user1= data.user1Username
@@ -597,29 +580,20 @@ function manageChat(data){
 
         audioContainer=document.getElementById("audio")
 
-
         if(userCount>1){  //Total users=2
-
-            
 
             if(currentUser==user1){
                 // Do stuff with user2 as this is the otherUser
                 otherUser=makeCode(user2Display,user2Pfp);
                 audioContainer.innerHTML+=otherUser
-
-
             }
             else{
                 //then user2 has to be the current user and user1 is the current user
                 otherUser=makeCode(user1Display,user1Pfp);
                 audioContainer.innerHTML+=otherUser
-
             }
         }
-
         document.querySelector("#chatContainer").innerHTML += html;
-
-
     } else {
         var audio = new Audio("{% static 'res/audio/userDisconnected.mp3' %}");
         // audio.volume = 0.3;
@@ -635,7 +609,7 @@ function manageChat(data){
     }
 }
 
-
+// For future versions, it doesn't work as of now...
 function manageWebRTC(data){
     let type = data.eventType;
     

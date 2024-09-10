@@ -1,10 +1,11 @@
+###  Libraries and stuff ############################################################
 from django.db import models
+from django.shortcuts import render
 from landing.models import AUser
 from notification.utils import notify
-# Create your models here.
+################################################################################
 
 class FriendList(models.Model):
-	# Continue from here
 	user=models.OneToOneField(AUser,on_delete=models.CASCADE,related_name="user_friend_list")
 	friends=models.ManyToManyField(AUser, blank=True,related_name="friends")
 
@@ -58,17 +59,15 @@ class FriendRequest(models.Model):
 				self.isActive=False
 				self.save()
 
-		notify(self.sender,'Your friend request got accepted!🥳',f'{self.receiver} is now your friend ✨✨')
-		notify(self.receiver,'You just made a new friend!',f'{self.sender} is now your friend ✨✨')
+		notify(self.sender,'Your friend request got accepted!🥳',f'{self.receiver.username} is now your friend ✨✨')
+		notify(self.receiver,'You just made a new friend!',f'{self.sender.username} is now your friend ✨✨')
 	
 	def decline(self):
 		self.isActive=False
 		self.save()
 
-		notify(self.sender, 'Your Friend Request was declined😭',f'{self.receiver} declined your friend request😭')
+		notify(self.sender, 'Your Friend Request was declined😭',f'{self.receiver.username} declined your friend request😭')
 
 	def cancel(self):
 		self.isActive=False
 		self.save()
-
-		# notify(self.sender,"You cancelled your friend request",f' You cancelled your friend request to {self.receiver}')

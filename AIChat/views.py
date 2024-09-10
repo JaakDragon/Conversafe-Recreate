@@ -1,15 +1,17 @@
-from django.shortcuts import render
+############ Libraries and stuff ################################################
+from django.shortcuts import render,redirect
 from django.http import HttpResponse
-from .models import Message,AIRoom
 from django.contrib.auth.decorators import login_required
+# Some Model objects
+from .models import Message,AIRoom
 from core.models import UserProfile
 from landing import models
-from random import shuffle
-import string
-from django.shortcuts import redirect
-from notification.utils import notifs, notifCount
-# Create your views here.
+from random import shuffle # for making random room name
+import string # Content to generate random room name
+from notification.utils import notifs, notifCount # For notifications
+###################################################################################
 
+# Generates random room name
 def makeName():
 	s=string.ascii_letters+string.digits
 	a=[x for x in s]
@@ -21,6 +23,7 @@ def makeName():
 	return newString[:16]
 
 
+# AI Chat page
 @login_required(login_url="login")
 def AIConnect(request,slug):
 	room=AIRoom.objects.get(slug=slug)
@@ -33,16 +36,13 @@ def AIConnect(request,slug):
 	context['messages']=messages
 	return render(request,'main/chat/mainAI.html',context)
 
-
+# Connecting to a particular room
 @login_required(login_url="login")
 def chatWithAI(request):
-	# TO REMOVE LATER
+	# Temporary workaround
 	allRooms=AIRoom.objects.all().delete()
 
 	slug=makeName()
 	room=AIRoom.objects.create(slug=slug)
 	return redirect('/chatWithAI/'+slug)
-
-
-
 

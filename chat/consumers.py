@@ -1,17 +1,19 @@
+###  Libraries and stuff ############################################################
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from asgiref.sync import sync_to_async
+# Some model objects
 from .models import chatRoom,Message,ReportedMessage
 from landing.models import AUser
-from django.utils import timezone
-# import detectlanguage
-#
+from django.utils import timezone # To store last active time
+################################################################################
+
 
 class ChatConsumer(AsyncWebsocketConsumer):
+	# Connecting client with server
 	async def connect(self):
 		self.room_name=self.scope['url_route']['kwargs']['room_name']
 		self.room_group_name='chat_%s' % self.room_name
-
 
 		self.user1Username=""
 		self.user2Username=""
@@ -21,32 +23,28 @@ class ChatConsumer(AsyncWebsocketConsumer):
 		self.user2Display=""
 		self.userCount=0
 
-
-		# detectlanguage.configuration.api_key = "0c23d6e0bb1c2f62b833856dd2e96fad"
-
+		# Increasing and checking user count
 		await self.increaseUserCount(self.room_name)
-
 		await self.checkUserCount(self.room_name)
 	   
-
 		await self.channel_layer.group_add(
 			self.room_group_name,
 			self.channel_name)
 
 		await self.accept()
 
-
+	# Disconnecting client from server
 	async def disconnect(self,code):
 		await self.decreaseUserCount(self.room_name)
-
 		await self.channel_layer.group_discard(
 			self.room_group_name,
 			self.channel_name)
 
+	# Receiving data from client-side
 	async def receive(self,text_data):
-
 		data=json.loads(text_data)
 
+		# Checking event type for a proper WebRTC Connection
 		if data['eventType']=="":
 			await self.processChat(data)
 		else:
@@ -91,8 +89,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 					}
 				)
 
-
-
+	# Process Chat on the basis of its type
 	async def processChat(self,data):
 		message=data['message']
 		username=data['username']
@@ -131,8 +128,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
 			'userCount':self.userCount
 			})
 
-	async def offer_received(self, event):
 
+ ################| Functions for WebRTC |########################
+	async def offer_received(self, event):
 		await self.send(text_data=json.dumps({
 			'eventType': 'offer_received',
 			'data': event['data'],
@@ -155,6 +153,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
 			'messageType':'webRTC'
 		}))
 
+	
+ ################| Sending messages to all users |########################
 	async def chat_message(self,event):
 		message=event['message']
 		username=event['username']
@@ -165,12 +165,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
 
 		await self.getUsers(self.room_name)
-		# try:
-		# 	lang=detectlanguage.simple_detect(message)!="en"
-		# 	if msgType=='NORMAL' and lang:
-		# 		print("NON ENGLISH CHAT DETECTED!!!!")
-		# except:
-		# 	pass
 
 		await self.send(text_data=json.dumps({
 			'message':message,
@@ -187,6 +181,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
 			'user2Pfp':self.user2Pfp,
 			'userCount':self.userCount
 			}))
+
+ ################| Updating user data to chat room object |########################
 
 	@sync_to_async
 	def getUsers(self,room):
@@ -223,13 +219,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
 			self.user2Display=obj.user2.userprofile.display_name
 
 
+ ################| Making Reported Message objects |########################
 	@sync_to_async
 	def checkMessage(self,messagePid,reporter):
 		msg=Message.objects.get(id=messagePid)
-		reporter=AUser.objects.get(username=username)
-		report=ReportedMessage.objects.create(message=msg,reporter=reporter)
+		msgText=msg.content
+		reporter=AUser.objects.get(username=msg.user.username)
+		report=ReportedMessage.objects.create(message=msg,messageText=msgText,reporter=reporter)
 
-
+ ################| Functions that update user data |########################
 	@sync_to_async
 	def checkUserCount(self,room):
 		obj=chatRoom.objects.get(slug=room)
@@ -294,10 +292,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
 		obj.save()
 
 
+ ################| Saves message |########################
 	@sync_to_async
 	def save_message(self,display,username,room,message,messageType):
 		user=AUser.objects.get(username=username)
 		roomName=chatRoom.objects.get(slug=room)
-
 		msg=Message.objects.create(displayName=display,user=user,room=roomName,content=message,messageType=messageType)
 		return msg.id

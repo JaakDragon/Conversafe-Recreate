@@ -1,13 +1,15 @@
+###  Libraries and stuff ############################################################
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
-from .models import FriendRequest,FriendList
-from landing.models import AUser
-from notification.utils import *
 from django.http import HttpResponse,JsonResponse
 from django.shortcuts import redirect
+# Some model objects
+from .models import FriendRequest,FriendList
+from landing.models import AUser
+from notification.utils import * # For notifications
+################################################################################
 
-# Create your views here.
-
+# Friends page
 @login_required(login_url="login")
 def friends(request):
 	context={}
@@ -17,25 +19,27 @@ def friends(request):
 	context['notifications_count']=notifCount(request.user)
 	return render(request,"main/func/friends.html",context)
 
+
+# Search for people
+@login_required(login_url="login")
 def searchPeople(request):
 	if request.method == 'POST':
 		context={}
-		# context['notifications_unread']=notifs(request.user)
-		# context['notifications_count']=notifCount(request.user)
-
 		context['notifications_unread']=['']
 		context['notifications_count']=0
 		query = request.POST.get('searchQuery')
+		# Search for people with same username as query with top 10 results
 		context['results']=AUser.objects.filter(username__icontains=query)[:10]
 		return render(request,"main/func/showResults.html",context)
 	return redirect("/")
 		
 
+# Send friend request
+@login_required(login_url="login")
 def sendFriendRequest(request):
 	if request.method == 'POST':
 		userToAddUsername = request.POST.get('userToAdd')
 		try:
-			# deleteNotification(request.user,userToAdd)
 			userToAdd=AUser.objects.get(username=userToAddUsername)
 
 			# If A request has already been sent
@@ -46,8 +50,8 @@ def sendFriendRequest(request):
 			elif FriendList.objects.get(user=request.user).isFriend(userToAdd):
 				return HttpResponse("Already friend")
 			else:
-				print(request.user.username, userToAdd, "These are the persons...")
 				friendReq=FriendRequest.objects.create(sender=request.user, receiver=userToAdd)
+				#Send a notificatoin to let the user know of their friend request
 				notify(userToAdd, "You have a friend request", f"{request.user.username} wants to be your friend")
 				return HttpResponse("Success")
 		except Exception as E:
@@ -55,14 +59,15 @@ def sendFriendRequest(request):
 			print(E)
 			return HttpResponse("User not found")
 	else:
-		# pass
 		return HttpResponse("Not allowed", status=405)
 
+
+# Unfriend someone
+@login_required(login_url="login")
 def unFriend(request):
 	if request.method == 'POST':
 		userToUnfriendUsername = request.POST.get('userToUnFriend')
 		try:
-			# deleteNotification(request.user,userToAdd)
 			userToUnfriend=AUser.objects.get(username=userToUnfriendUsername)
 			userFriendList=FriendList.objects.get(user=request.user)
 
@@ -78,6 +83,8 @@ def unFriend(request):
 		# pass
 		return HttpResponse("Not allowed", status=405)
 
+# Cancelling existing friend request
+@login_required(login_url="login")
 def CancelRequest(request):
 	if request.method == 'POST':
 		userToCancelReqUsername = request.POST.get('userCancelRequest')
@@ -93,9 +100,11 @@ def CancelRequest(request):
 			print(E)
 			return HttpResponse("User not found")
 	else:
-		# pass
 		return HttpResponse("Not allowed", status=405)
 
+
+# Accepting Friend request
+@login_required(login_url="login")
 def AcceptRequest(request):
 	if request.method == 'POST':
 		userAcceptUsername = request.POST.get('userAccept')
@@ -112,9 +121,9 @@ def AcceptRequest(request):
 			print(E)
 			return HttpResponse("User not found")
 	else:
-		# pass
 		return HttpResponse("Not allowed", status=405)
 
+# Declining Friend request
 def DeclineRequest(request):
 	if request.method == 'POST':
 		userDeclineUsername = request.POST.get('userDecline')
@@ -131,5 +140,4 @@ def DeclineRequest(request):
 			print(E)
 			return HttpResponse("User not found")
 	else:
-		# pass
 		return HttpResponse("Not allowed", status=405)

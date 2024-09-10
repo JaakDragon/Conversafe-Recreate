@@ -1,14 +1,16 @@
+###  Libraries and stuff ############################################################
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from asgiref.sync import sync_to_async
+# Some Model objects
 from .models import AIRoom,Message
 from landing.models import AUser
-from django.utils import timezone
-import random
-from transformers import BlenderbotTokenizer, BlenderbotForConditionalGeneration
-
+import random # For random initial messages
+from transformers import BlenderbotTokenizer, BlenderbotForConditionalGeneration # For AI Models
+####################################################################################
 
 class ChatConsumer(AsyncWebsocketConsumer):
+	# Connecting client with server
 	async def connect(self):
 		self.room_name=self.scope['url_route']['kwargs']['room_name']
 		self.room_group_name='chat_%s' % self.room_name
@@ -23,33 +25,38 @@ class ChatConsumer(AsyncWebsocketConsumer):
 		self.tokenizer = BlenderbotTokenizer.from_pretrained("facebook/blenderbot-400M-distill")
 		self.model = BlenderbotForConditionalGeneration.from_pretrained("facebook/blenderbot-400M-distill")
 
+	# Handles Chat prompts with the model
 	def chat(self,prompt):
 		inputs = self.tokenizer(prompt, return_tensors="pt")
 		reply = self.model.generate(**inputs)
 		return self.tokenizer.decode(reply[0], skip_special_tokens=True)
 
+	# Disconnects client from server
 	async def disconnect(self,code):
 		await self.channel_layer.group_discard(
 			self.room_group_name,
 			self.channel_name)
 
+	# Receiving data from client to server
 	async def receive(self,text_data):
+		# Storing all received data
 		data=json.loads(text_data)
-
 		message=data['message']
 		username=data['username']
 		displayname=data['displayName']
 		room=data['room']
 		messageType=data['messageType']
 
+		# Checking Message type for further processing
 		if messageType=="JOINED":
 			await self.addNewUser(self.room_name,username)
-
 		elif messageType=="LEFT":
 			await self.removeUser(self.room_name,username)
 
+		# Saving Received message
 		await self.save_message(displayname,username,room,message,messageType)	
 
+		# Sending back the message to all clients
 		await self.channel_layer.group_send(
 			self.room_group_name,
 			{
@@ -61,6 +68,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 			'messageType':messageType,
 			})
 
+		# Sending Initial message on joining and giving reply to any prompt 
 		if messageType=="JOINED":
 			await self.channel_layer.group_send(
 				self.room_group_name,
@@ -86,6 +94,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 				'messageType':'NORMAL'
 				})
 
+	# Generating reply by the AI Model
 	async def ai_reply(self,event):
 		def cleanReply(text):
 			if "X 20 20 px" in text:
@@ -115,7 +124,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 			'initial':'no'
 			}))
 
-
+	# Initial greeting
 	async def send_initial(self,event):
 		userPrompt=event['userPrompt']
 		AiUsername=event['username']
@@ -136,6 +145,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 			'initial':'yes'
 			}))
 
+	# Function that handles sending messages to client
 	async def chat_message(self,event):
 		message=event['message']
 		username=event['username']
@@ -152,7 +162,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 			'initial':'no'
 			}))
 
-
+######## Important functions ##############################################
 	@sync_to_async
 	def addNewUser(self,room,username):
 		obj=AIRoom.objects.get(slug=room)

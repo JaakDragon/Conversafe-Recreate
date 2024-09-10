@@ -1,16 +1,19 @@
+###  Libraries and stuff ############################################################
 from django.shortcuts import render
-from django.http import HttpResponse
-from .models import chatRoom,Message
+from django.shortcuts import redirect
 from django.contrib.auth.decorators import login_required
+from django.http import HttpResponse
+# Some model objects
+from .models import chatRoom,Message
 from core.models import UserProfile
 from landing import models
+# For random roomname generation
 from random import shuffle
 import string
-from notification.utils import *
-from django.shortcuts import redirect
-# Create your views here.
+from notification.utils import * # For notifications
+################################################################################
 
-
+#### A Function only for debugging, lists all currently running chat rooms #############
 @login_required(login_url="login")
 def rooms(request):
 	rooms=chatRoom.objects.all()
@@ -21,6 +24,7 @@ def rooms(request):
 
 	return render(request,'main/chat/rooms.html',context)
 
+# Connect to a particular chat room 
 @login_required(login_url="login")
 def room(request,slug):
 	room=chatRoom.objects.get(slug=slug)
@@ -37,7 +41,7 @@ def room(request,slug):
 	
 	return render(request,'main/chat/main.html',context)
 
-
+# Generate chat room name
 def makeName():
 	s=string.ascii_letters+string.digits
 	a=[x for x in s]
@@ -48,7 +52,7 @@ def makeName():
 
 	return newString[:16]
 
-
+# Find a chat room for the user
 @login_required(login_url="login")
 def findRoom(request):
 	rooms=chatRoom.objects.filter(users=1)
@@ -85,7 +89,7 @@ def findRoom(request):
 		return redirect("/chat/"+slug)
 
 
-
+# Create a Private room
 @login_required(login_url="login")
 def createPrivateRoom(request):
 	user = models.AUser.objects.get(pk=request.user.pk)
@@ -95,6 +99,7 @@ def createPrivateRoom(request):
 	r=chatRoom.objects.create(name=roomName,slug=slug,gender=profile.gender)
 	return redirect("/chat/private/"+slug)
 
+# Private rooms creation or joining
 @login_required(login_url="login")
 def privateRoomCreator(request):
 	context={}
@@ -102,7 +107,9 @@ def privateRoomCreator(request):
 	context['notifications_count']=notifCount(request.user)
 	
 	return render(request,'main/chat/createOrJoin.html',context)
-	
+
+
+# Private Rooms view 
 @login_required(login_url="login")
 def roomJoinPrivate(request,slug):
 	room=chatRoom.objects.get(slug=slug)
