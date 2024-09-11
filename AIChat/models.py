@@ -8,7 +8,7 @@ class AIRoom(models.Model):
 
 class Message(models.Model):
 	room=models.ForeignKey(AIRoom,related_name="AIMessages",on_delete=models.CASCADE)
-	user=models.ForeignKey(AUser,related_name="AIMessages",on_delete=models.CASCADE)
+	user=models.ForeignKey(AUser,related_name="AIMessages",on_delete=models.CASCADE, null=True,blank=True)
 	displayName=models.CharField(max_length=30,default="ErrorOnDisplay")
 	content=models.TextField()
 	time=models.DateTimeField(auto_now_add=True)
