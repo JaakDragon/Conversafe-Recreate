@@ -43,37 +43,45 @@ Conversafe is an English learning platform designed to make mastering English bo
 
 ## To Run Locally
 
-Running this project localy is very easy.
+Running this project locally is very easy.
 
-Just clone the project  and follow steps
+1. Start by cloning this repository
 
 ```bash
   git clone https://github.com/ShibamRoy9826/Conversafe.git
 ```
-
-- To run the frontend
+2. Get inside the Code directory
 
 ```bash
   cd Conversafe
 ```
 
-Install dependencies
+3. Install necessary dependencies (Its suggested to make a virtual environment to run the project. Recommended Python Version : 3.10.5 )
+ You should also have npm installed.
+```bash
+  pip install requirements.txt
+```
+4. Install TailwindCss
 
 ```bash
-  npm install
+npm init -y
+npm install -D tailwindcss
+npx tailwindcss init
 ```
 
-Start the server
-
-```bash
-  npm run dev
-```
-
-- Now the backend
+5. To Run the server
 
 ```bash
 python manage.py runserver
 ```
+
+6. To Run Tailwind CSS
+```bash
+npm run dev
+```
+
+7. Now you can visit https://127.0.0.1:8000 to view the application:)
+
 ## License
 
 This project is under [MIT](https://choosealicense.com/licenses/mit/) License.
